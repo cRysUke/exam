@@ -1,21 +1,11 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { Form, Field } from 'vee-validate';
+import * as yup from 'yup';
 
 let products = ref({});
 let categories = ref({});
 
-let form = reactive({
-    'name': '',
-    'category_id': '',
-    'description': '',
-});
-
-// Function to reset the form fields
-const resetForm = (formObject) => {
-    Object.keys(formObject).forEach((key) => {
-        formObject[key] = '';
-    });
-};
 
 
 const getProducts = async () => {
@@ -28,15 +18,25 @@ const search = async () => {
     products.value = response.data
 }
 
-const addProduct = async () => {
-    let response = await axios.post("/api/products", form)
+
+
+const addProduct = (values, { resetForm }) => {
+    let response = axios.post("/api/products", values)
         .then(response => {
-            resetForm(form);
             getProducts()
             $('#createProductModal').modal('hide');
+            resetForm();
         });
 }
 
+
+
+
+const schema = yup.object({
+    name: yup.string().required().max(30),
+    category_id: yup.string().required('category is a required field'),
+    description: yup.string().required().max(100),
+});
 
 const getCategory = () => {
     axios.get("/api/category")
@@ -87,39 +87,45 @@ getCategory()
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <div class="modal-body">
-                            <form autocomplete="off">
+                        <Form @submit="addProduct" :validation-schema="schema" v-slot="{ errors }">
+                            <div class="modal-body">
+
                                 <div class="form-group">
+
                                     <label for="name">Name</label>
-                                    <input v-model="form.name" type="text" class="form-control " id="name" name="name"
-                                        aria-describedby="nameHelp" placeholder="Enter product name">
+                                    <Field type="text" class="form-control " :class="{ 'is-invalid': errors.name }"
+                                        id="name" name="name" aria-describedby="nameHelp"
+                                        placeholder="Enter product name" />
+                                    <span class="invalid-feedback">{{ errors.name }}</span>
                                 </div>
 
                                 <div class="form-group">
+
                                     <label for="category_id">Category</label>
-                                    <select v-model="form.category_id" class="form-control " id="category_id"
-                                        aria-describedby="categoryHelp" name="category_id">
+                                    <Field as="select" class="form-control " :class="{ 'is-invalid': errors.category_id }"
+                                        id="category_id" aria-describedby="categoryHelp" name="category_id">
                                         <option v-for="category in categories" :value="category.id">
                                             {{ category.category_name }}
                                         </option>
-                                    </select>
+                                    </Field>
+                                    <span class="invalid-feedback">{{ errors.category_id }}</span>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="description">Description</label>
-                                    <input v-model="form.description" type="text" class="form-control " id="description"
-                                        aria-describedby="descriptionHelp" placeholder="Enter description"
-                                        name="description">
+                                    <Field type="text" class="form-control" :class="{ 'is-invalid': errors.description }"
+                                        id="description" aria-describedby="descriptionHelp" placeholder="Enter description"
+                                        name="description" />
+                                    <span class="invalid-feedback">{{ errors.description }}</span>
                                 </div>
 
-                            </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                            </div>
+                        </Form>
 
-
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                            <button @click="addProduct" type="button" class="btn btn-primary">Save</button>
-                        </div>
                     </div>
                 </div>
             </div>
