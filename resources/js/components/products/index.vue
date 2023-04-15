@@ -2,7 +2,9 @@
 import { onMounted, ref } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as yup from 'yup';
+import { useToastr } from '../../toastr.js';
 
+const toastr = useToastr();
 let products = ref({});
 let categories = ref({});
 const editing = ref(false);
@@ -30,12 +32,22 @@ const getProducts = async () => {
 }
 
 //create a product
-const createProduct = (values) => {
+const createProduct = (values, { resetForm }) => {
     let response = axios.post("/api/products", values)
         .then(response => {
             getProducts()
-            form.value.resetForm();
             $('#productFormModal').modal('hide');
+            console.log(response)
+            if (response.data.success) {
+                toastr.success(response.data.message)
+            }
+            else (
+                toastr.error(response.data.message)
+            )
+
+            // form.value.resetForm();
+            resetForm();
+
         });
 }
 
@@ -43,37 +55,49 @@ const createProduct = (values) => {
 const updateProduct = (values) => {
     let response = axios.put("/api/products/" + formValues.value.id, values)
         .then((response) => {
+            console.log(response.data.message)
             getProducts()
             $('#productFormModal').modal('hide');
+            if (response.data.success) {
+                toastr.success(response.data.message)
+            }
+            else (
+                toastr.error(response.data.message)
+            )
             form.value.resetForm();
+
+
         });
 };
 
 //show add product form
 const addProduct = () => {
     editing.value = false;
+    form.value.resetForm();
     $('#productFormModal').modal('show');
-    resetForm(formValues);
+
 };
 
 //show edit product form
 const editProduct = (product) => {
     editing.value = true;
-    $('#productFormModal').modal('show');
+    form.value.resetForm();
     formValues.value = {
         id: product.id,
         name: product.name,
         category_id: product.category_id,
         description: product.description,
     }
+    $('#productFormModal').modal('show');
+
 };
 
 //submit button condition for create and update
-const handleSubmit = (values) => {
+const handleSubmit = (values, actions) => {
     if (editing.value) {
-        updateProduct(values);
+        updateProduct(values, actions);
     } else {
-        createProduct(values);
+        createProduct(values, actions);
     }
 }
 

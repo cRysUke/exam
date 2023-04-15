@@ -16,11 +16,13 @@ class ProductController extends Controller
         if ($products->count() > 0) {
             return response()->json([
                 'status' => 200,
+                'success' => true,
                 'data' => $products,
             ], 200);
         } else {
             return response()->json([
                 'status' => 204,
+                'success' => false,
                 'message' => 'No Record(s) found',
             ], 204);
         }
@@ -40,6 +42,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 422,
+                'success' => false,
                 'message' =>  $validator->errors(),
             ], 422);
         }
@@ -48,11 +51,13 @@ class ProductController extends Controller
         if ($insert) {
             return response()->json([
                 'status' => 201,
+                'success' => true,
                 'message' => 'Product added successfully.',
             ], 201);
         } else {
             return response()->json([
                 'status' => 500,
+                'success' => false,
                 'message' => 'Something went wrong',
             ], 500);
         }
@@ -65,11 +70,13 @@ class ProductController extends Controller
         if ($product->count() > 0) {
             return response()->json([
                 'status' => 200,
+                'success' => true,
                 'data' => $product,
             ], 200);
         } else {
             return response()->json([
                 'status' => 204,
+                'success' => true,
                 'message' => 'No Record(s) found',
             ], 204);
         }
@@ -87,6 +94,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 422,
+                'success' => false,
                 'message' =>  $validator->errors(),
             ], 422);
         }
@@ -97,17 +105,20 @@ class ProductController extends Controller
             if ($update) {
                 return response()->json([
                     'status' => 201,
+                    'success' => true,
                     'message' => 'Product updated successfully.',
                 ], 201);
             } else {
                 return response()->json([
                     'status' => 500,
+                    'success' => false,
                     'message' => 'Something went wrong',
                 ], 500);
             }
         } else {
             return response()->json([
                 'status' => 204,
+                'success' => false,
                 'message' => 'No Record(s) found',
             ], 204);
         }
@@ -122,17 +133,20 @@ class ProductController extends Controller
             if ($update) {
                 return response()->json([
                     'status' => 201,
+                    'success' => true,
                     'message' => 'Product deleted successfully.',
                 ], 201);
             } else {
                 return response()->json([
                     'status' => 500,
+                    'success' => false,
                     'message' => 'Something went wrong',
                 ], 500);
             }
         } else {
             return response()->json([
                 'status' => 204,
+                'success' => false,
                 'message' => 'No Record(s) found',
             ], 204);
         }
@@ -153,11 +167,13 @@ class ProductController extends Controller
             if ($products->count() > 0) {
                 return response()->json([
                     'status' => 200,
+                    'success' => true,
                     'data' => $products,
                 ], 200);
             } else {
                 return response()->json([
                     'status' => 204,
+                    'success' => false,
                     'message' => 'No Record(s) found',
                 ], 204);
             }
@@ -168,11 +184,13 @@ class ProductController extends Controller
             if ($products->count() > 0) {
                 return response()->json([
                     'status' => 200,
+                    'success' => true,
                     'data' => $products,
                 ], 200);
             } else {
                 return response()->json([
                     'status' => 204,
+                    'success' => false,
                     'message' => 'No Record(s) found',
                 ], 204);
             }
@@ -182,11 +200,13 @@ class ProductController extends Controller
             if ($products->count() > 0) {
                 return response()->json([
                     'status' => 200,
+                    'success' => true,
                     'data' => $products,
                 ], 200);
             } else {
                 return response()->json([
                     'status' => 204,
+                    'success' => false,
                     'message' => 'No Record(s) found',
                 ], 204);
             }
