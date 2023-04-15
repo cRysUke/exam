@@ -12,7 +12,7 @@ class ProductController extends Controller
     public function index()
     {
 
-        $products = Product::with('category')->orderByDesc('created_at')->get();
+        $products = Product::with('category')->orderByDesc('updated_at')->get();
         if ($products->count() > 0) {
             return response()->json([
                 'status' => 200,

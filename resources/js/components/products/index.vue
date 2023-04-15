@@ -5,54 +5,97 @@ import * as yup from 'yup';
 
 let products = ref({});
 let categories = ref({});
+const editing = ref(false);
+const formValues = ref();
+const form = ref(null);
 
-
-
-const getProducts = async () => {
-    let response = await axios.get("/api/products")
-    products.value = response.data.data;
-}
-
-const search = async () => {
-    let response = await axios.get("/api/products?s=" + searchKeyword + "&c=" + searchCategory)
-    products.value = response.data
-}
-
-
-
-const addProduct = (values, { resetForm }) => {
-    let response = axios.post("/api/products", values)
-        .then(response => {
-            getProducts()
-            $('#createProductModal').modal('hide');
-            resetForm();
-        });
-}
-
-
-
-
-const schema = yup.object({
+//form validation
+const createProductSchema = yup.object({
     name: yup.string().required().max(30),
     category_id: yup.string().required('category is a required field'),
     description: yup.string().required().max(100),
 });
 
+//clear input values
+const resetForm = (formObject) => {
+    Object.keys(formObject).forEach((key) => {
+        formObject[key] = '';
+    });
+};
+
+//get all products
+const getProducts = async () => {
+    let response = await axios.get("/api/products")
+    products.value = response.data.data;
+}
+
+//create a product
+const createProduct = (values) => {
+    let response = axios.post("/api/products", values)
+        .then(response => {
+            getProducts()
+            form.value.resetForm();
+            $('#productFormModal').modal('hide');
+        });
+}
+
+//update a product
+const updateProduct = (values) => {
+    let response = axios.put("/api/products/" + formValues.value.id, values)
+        .then((response) => {
+            getProducts()
+            $('#productFormModal').modal('hide');
+            form.value.resetForm();
+        });
+};
+
+//show add product form
+const addProduct = () => {
+    editing.value = false;
+    $('#productFormModal').modal('show');
+    resetForm(formValues);
+};
+
+//show edit product form
+const editProduct = (product) => {
+    editing.value = true;
+    $('#productFormModal').modal('show');
+    formValues.value = {
+        id: product.id,
+        name: product.name,
+        category_id: product.category_id,
+        description: product.description,
+    }
+};
+
+//submit button condition for create and update
+const handleSubmit = (values) => {
+    if (editing.value) {
+        updateProduct(values);
+    } else {
+        createProduct(values);
+    }
+}
+
+//search
+const search = async () => {
+    let response = await axios.get("/api/products?s=" + searchKeyword + "&c=" + searchCategory)
+    products.value = response.data
+}
+
+//get categories for form category dropdown
 const getCategory = () => {
     axios.get("/api/category")
         .then((response) => {
             // console.log(response, 'response')
             categories.value = response.data.data;
         })
-
-
 }
 
+//functions onMount
 onMounted(async () => {
     getProducts()
 })
-
-getCategory()
 
 </script>
 
@@ -71,23 +114,26 @@ getCategory()
     <div class="content">
         <div class="container-fluid">
             <!-- Button trigger modal -->
-            <button @click="getCategory" type="button" class="btn btn-primary mb-2" data-toggle="modal"
-                data-target="#createProductModal">
+            <button @click="addProduct(); getCategory()" type="button" class="btn btn-primary mb-2">
                 Add New
             </button>
 
             <!-- Modal -->
-            <div class="modal fade" id="createProductModal" data-backdrop="static" tabindex="-1" role="dialog"
+            <div class="modal fade" id="productFormModal" data-backdrop="static" tabindex="-1" role="dialog"
                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="staticBackdropLabel">Add New</h5>
+                            <h5 class="modal-title" id="staticBackdropLabel">
+                                <span v-if="editing">Edit Product</span>
+                                <span v-else>Add New Product</span>
+                            </h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <Form @submit="addProduct" :validation-schema="schema" v-slot="{ errors }">
+                        <Form ref="form" @submit="handleSubmit" :validation-schema="createProductSchema" v-slot="{ errors }"
+                            :initial-values="formValues">
                             <div class="modal-body">
 
                                 <div class="form-group">
@@ -141,6 +187,7 @@ getCategory()
                                 <th>Description</th>
                                 <th>Created At</th>
                                 <th>Updated At</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -151,6 +198,8 @@ getCategory()
                                 <td>{{ product.description }}</td>
                                 <td>{{ product.created_at }}</td>
                                 <td>{{ product.updated_at }}</td>
+                                <td><a href="#" @click.prevent="editProduct(product); getCategory()"><i
+                                            class="fa fa-edit"></i></a></td>
                             </tr>
                         </tbody>
                     </table>
