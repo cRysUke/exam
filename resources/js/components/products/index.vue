@@ -10,6 +10,8 @@ let categories = ref({});
 const editing = ref(false);
 const formValues = ref();
 const form = ref(null);
+const productIdBeingDeleted = ref(null);
+
 
 //form validation
 const createProductSchema = yup.object({
@@ -29,6 +31,7 @@ const resetForm = (formObject) => {
 const getProducts = async () => {
     let response = await axios.get("/api/products")
     products.value = response.data.data;
+
 }
 
 //create a product
@@ -37,7 +40,6 @@ const createProduct = (values, { resetForm }) => {
         .then(response => {
             getProducts()
             $('#productFormModal').modal('hide');
-            console.log(response)
             if (response.data.success) {
                 toastr.success(response.data.message)
             }
@@ -55,7 +57,6 @@ const createProduct = (values, { resetForm }) => {
 const updateProduct = (values) => {
     let response = axios.put("/api/products/" + formValues.value.id, values)
         .then((response) => {
-            console.log(response.data.message)
             getProducts()
             $('#productFormModal').modal('hide');
             if (response.data.success) {
@@ -100,6 +101,31 @@ const handleSubmit = (values, actions) => {
         createProduct(values, actions);
     }
 }
+
+//show delete modal
+const deleteProduct = (product) => {
+    productIdBeingDeleted.value = product.id
+    $('#deleteUserModal').modal('show');
+};
+
+
+//delete a product
+const destroyProduct = () => {
+
+    let response = axios.delete('/api/products/ ' + productIdBeingDeleted.value)
+        .then((response) => {
+            getProducts()
+            $('#deleteUserModal').modal('hide');
+            if (response.data.success) {
+                toastr.success(response.data.message)
+            }
+            else (
+                toastr.error(response.data.message)
+            )
+        });
+};
+
+
 
 //search
 const search = async () => {
@@ -223,10 +249,37 @@ onMounted(async () => {
                                 <td>{{ product.created_at }}</td>
                                 <td>{{ product.updated_at }}</td>
                                 <td><a href="#" @click.prevent="editProduct(product); getCategory()"><i
-                                            class="fa fa-edit"></i></a></td>
+                                            class="fa fa-edit"></i></a><a href="#"
+                                        @click.prevent="deleteProduct(product); getCategory()"><i
+                                            class="fa fa-trash text-danger ml-2"></i></a>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div class="modal fade" id="deleteUserModal" data-backdrop="static" tabindex="-1" role="dialog"
+                aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="staticBackdropLabel">
+                                <span>Delete Product</span>
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <h5>Are you sure you want to delete this product?</h5>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button @click.prevent="destroyProduct" type="submit" class="btn btn-primary">Delete</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
