@@ -12,7 +12,7 @@ class ProductController extends Controller
     public function index()
     {
 
-        $products = Product::with('category')->orderByDesc('updated_at')->paginate(5);
+        $products = Product::with('category')->orderByDesc('updated_at')->paginate();
         if ($products->count() > 0) {
             return response()->json([
                 'status' => 200,
@@ -161,7 +161,7 @@ class ProductController extends Controller
             $products = Product::where('category_id', $category)->where(function ($query) use ($keywords) {
                 $query->where('name', 'LIKE', '%' . $keywords . '%')
                     ->orWhere('description', 'LIKE', '%' . $keywords . '%');
-            })->with('category')->paginate(5);
+            })->with('category')->paginate();
 
             if ($products->count() > 0) {
                 return response()->json([
@@ -178,7 +178,7 @@ class ProductController extends Controller
             }
         } elseif ($keywords != null and $category == null) {
             $products = Product::where('name', 'LIKE', '%' . $keywords . '%')
-                ->orWhere('description', 'LIKE', '%' . $keywords . '%')->with('category')->paginate(5);
+                ->orWhere('description', 'LIKE', '%' . $keywords . '%')->with('category')->paginate();
 
             if ($products->count() > 0) {
                 return response()->json([
@@ -194,7 +194,7 @@ class ProductController extends Controller
                 ], 204);
             }
         } elseif ($keywords == null and $category != null) {
-            $products = Product::where('category_id', $category)->with('category')->paginate(5);
+            $products = Product::where('category_id', $category)->with('category')->paginate();
 
             if ($products->count() > 0) {
                 return response()->json([

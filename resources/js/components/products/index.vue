@@ -36,7 +36,12 @@ const resetForm = (formObject) => {
 //get all products
 const getProducts = async (page = 1) => {
     let response = await axios.get(`/api/products?page=${page}`)
-    products.value = response.data.data;
+        .then(response => {
+            products.value = response.data.data;
+            selectedProducts, value = [];
+            selectAll.value = false;
+        });
+
 
 }
 
@@ -168,9 +173,9 @@ const selectAllProducts = () => {
     if (selectAll.value) {
         selectedProducts.value = products.value.data.map(products => products.id)
     }
-    // else {
-    //     selectedProducts.value = [];
-    // }
+    else {
+        selectedProducts.value = [];
+    }
 
     console.log(selectedProducts.value)
 }
@@ -217,16 +222,19 @@ const getCategory = () => {
 
     <div class="content">
         <div class="container-fluid">
-            <div>
+            <div class="d-flex">
 
                 <button @click="addProduct()" type="button" class="btn btn-primary mb-2">
+                    <i class="fa fa-plus-circle mr-1"></i>
                     Add New
                 </button>
-
-                <button v-if="selectedProducts.length > 0" @click="bulkDelete()" type="button"
-                    class="btn btn-danger mb-2 ml-2">
-                    Delete Selected
-                </button>
+                <div v-if="selectedProducts.length > 0">
+                    <button @click="bulkDelete()" type="button" class="btn btn-danger mb-2 ml-2">
+                        <i class="fa fa-trash mr-1"></i>
+                        Delete Selected
+                    </button>
+                    <span class="ml-2">Selected {{ selectedProducts.length }} products</span>
+                </div>
             </div>
 
 
