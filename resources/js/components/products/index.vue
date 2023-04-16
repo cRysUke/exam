@@ -3,9 +3,11 @@ import { onMounted, ref } from 'vue';
 import { Form, Field } from 'vee-validate';
 import * as yup from 'yup';
 import { useToastr } from '../../toastr.js';
+import { Bootstrap4Pagination } from 'laravel-vue-pagination';
+
 
 const toastr = useToastr();
-let products = ref([]);
+let products = ref({ 'data': [] });
 let categories = ref([]);
 const editing = ref(false);
 const formValues = ref();
@@ -30,8 +32,8 @@ const resetForm = (formObject) => {
 };
 
 //get all products
-const getProducts = async () => {
-    let response = await axios.get("/api/products")
+const getProducts = async (page = 1) => {
+    let response = await axios.get(`/api/products?page=${page}`)
     products.value = response.data.data;
 
 }
@@ -269,8 +271,8 @@ const getCategory = () => {
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr v-for="product in products" :key="product.id">
+                        <tbody v-if="products.data.length > 0">
+                            <tr v-for="product in products.data" :key="product.id">
                                 <td>{{ product.id }}</td>
                                 <td>{{ product.name }}</td>
                                 <td>{{ product.category.category_name }}</td>
@@ -284,6 +286,7 @@ const getCategory = () => {
                             </tr>
                         </tbody>
                     </table>
+                    <Bootstrap4Pagination :data="products" @pagination-change-page="getProducts" />
                 </div>
             </div>
 
