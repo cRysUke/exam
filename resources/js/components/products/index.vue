@@ -5,12 +5,14 @@ import * as yup from 'yup';
 import { useToastr } from '../../toastr.js';
 
 const toastr = useToastr();
-let products = ref({});
-let categories = ref({});
+let products = ref([]);
+let categories = ref([]);
 const editing = ref(false);
 const formValues = ref();
 const form = ref(null);
 const productIdBeingDeleted = ref(null);
+let searchCategory = ref([]);
+let searchKeyword = ref([]);
 
 
 //form validation
@@ -125,27 +127,29 @@ const destroyProduct = () => {
         });
 };
 
+//functions onMount
+onMounted(async () => {
+    getProducts()
+    getCategory()
+})
+
+
+
 
 
 //search
-const search = async () => {
-    let response = await axios.get("/api/products?s=" + searchKeyword + "&c=" + searchCategory)
-    products.value = response.data
+const searchQuery = async () => {
+    let response = await axios.get("/api/products/search?s=" + searchKeyword.value + "&c=" + searchCategory.value)
+    products.value = response.data.data;
 }
 
 //get categories for form category dropdown
 const getCategory = () => {
     axios.get("/api/category")
         .then((response) => {
-            // console.log(response, 'response')
             categories.value = response.data.data;
         })
 }
-
-//functions onMount
-onMounted(async () => {
-    getProducts()
-})
 
 </script>
 
@@ -164,9 +168,34 @@ onMounted(async () => {
     <div class="content">
         <div class="container-fluid">
             <!-- Button trigger modal -->
-            <button @click="addProduct(); getCategory()" type="button" class="btn btn-primary mb-2">
+            <button @click="addProduct()" type="button" class="btn btn-primary mb-2">
                 Add New
             </button>
+
+
+            <div class="row mb-2">
+                <div class="col-md-3 offset-md-6 mb-2">
+                    <div class="input-group">
+                        <select class="select2 form-control form-control-md" v-model="searchCategory">
+                            <option value=""></option>
+                            <option v-for="category in categories" :value="category.id">
+                                {{ category.category_name }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="input-group">
+                        <input v-model="searchKeyword" type="search" class="form-control form-control-md"
+                            placeholder="Type your keywords here">
+                        <div class="input-group-append">
+                            <button @click.prevent="searchQuery" type="submit" class="btn btn-md btn-default">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Modal -->
             <div class="modal fade" id="productFormModal" data-backdrop="static" tabindex="-1" role="dialog"
@@ -248,9 +277,8 @@ onMounted(async () => {
                                 <td>{{ product.description }}</td>
                                 <td>{{ product.created_at }}</td>
                                 <td>{{ product.updated_at }}</td>
-                                <td><a href="#" @click.prevent="editProduct(product); getCategory()"><i
-                                            class="fa fa-edit"></i></a><a href="#"
-                                        @click.prevent="deleteProduct(product); getCategory()"><i
+                                <td><a href="#" @click.prevent="editProduct(product)"><i class="fa fa-edit"></i></a><a
+                                        href="#" @click.prevent="deleteProduct(product)"><i
                                             class="fa fa-trash text-danger ml-2"></i></a>
                                 </td>
                             </tr>

@@ -157,12 +157,11 @@ class ProductController extends Controller
     {
         $keywords = $request->get('s');
         $category = $request->get('c');
-
         if ($keywords != null and $category != null) {
             $products = Product::where('category_id', $category)->where(function ($query) use ($keywords) {
                 $query->where('name', 'LIKE', '%' . $keywords . '%')
                     ->orWhere('description', 'LIKE', '%' . $keywords . '%');
-            })->get();
+            })->with('category')->get();
 
             if ($products->count() > 0) {
                 return response()->json([
@@ -179,7 +178,7 @@ class ProductController extends Controller
             }
         } elseif ($keywords != null and $category == null) {
             $products = Product::where('name', 'LIKE', '%' . $keywords . '%')
-                ->orWhere('description', 'LIKE', '%' . $keywords . '%')->get();
+                ->orWhere('description', 'LIKE', '%' . $keywords . '%')->with('category')->get();
 
             if ($products->count() > 0) {
                 return response()->json([
@@ -195,7 +194,7 @@ class ProductController extends Controller
                 ], 204);
             }
         } elseif ($keywords == null and $category != null) {
-            $products = Product::where('category_id', $category)->get();
+            $products = Product::where('category_id', $category)->with('category')->get();
 
             if ($products->count() > 0) {
                 return response()->json([
