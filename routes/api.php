@@ -21,7 +21,9 @@ use App\Http\Controllers\CategoryController;
 // });
 
 
-Route::get('/products/search', [ProductController::class, 'search']);
+
 Route::resource('products', ProductController::class);
+Route::delete('products', [ProductController::class, 'bulkDelete']);
+Route::get('/products/search', [ProductController::class, 'search']);
 
 Route::get('/category', [CategoryController::class, 'index']);

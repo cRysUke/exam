@@ -15,6 +15,8 @@ const form = ref(null);
 const productIdBeingDeleted = ref(null);
 let searchCategory = ref([]);
 let searchKeyword = ref([]);
+const selectedProducts = ref([]);
+const selectAll = ref(false)
 
 
 //form validation
@@ -112,7 +114,6 @@ const deleteProduct = (product) => {
     $('#deleteUserModal').modal('show');
 };
 
-
 //delete a product
 const destroyProduct = () => {
 
@@ -128,6 +129,51 @@ const destroyProduct = () => {
             )
         });
 };
+
+//checkbox function that add and remove id (to be use in bulk delete)
+const toggleSelection = (product) => {
+
+    const index = selectedProducts.value.indexOf(product.id);
+
+    if (index === -1) {
+        selectedProducts.value.push(product.id)
+    }
+    else {
+        selectedProducts.value.splice(index, 1)
+    }
+}
+
+//bulk delete a product
+const bulkDelete = () => {
+    let response = axios.delete('/api/products', {
+
+        data: {
+            ids: selectedProducts.value
+        }
+    }).then(response => {
+        getProducts()
+        selectedProducts, value = [];
+        selectAll.value = false;
+        if (response.data.success) {
+            toastr.success(response.data.message)
+        }
+        else (
+            toastr.error(response.data.message)
+        )
+    });
+}
+
+//checkbox select all (to be use in bulk delete)
+const selectAllProducts = () => {
+    if (selectAll.value) {
+        selectedProducts.value = products.value.data.map(products => products.id)
+    }
+    // else {
+    //     selectedProducts.value = [];
+    // }
+
+    console.log(selectedProducts.value)
+}
 
 //functions onMount
 onMounted(async () => {
@@ -153,6 +199,8 @@ const getCategory = () => {
         })
 }
 
+
+
 </script>
 
 <template>
@@ -169,10 +217,17 @@ const getCategory = () => {
 
     <div class="content">
         <div class="container-fluid">
-            <!-- Button trigger modal -->
-            <button @click="addProduct()" type="button" class="btn btn-primary mb-2">
-                Add New
-            </button>
+            <div>
+
+                <button @click="addProduct()" type="button" class="btn btn-primary mb-2">
+                    Add New
+                </button>
+
+                <button v-if="selectedProducts.length > 0" @click="bulkDelete()" type="button"
+                    class="btn btn-danger mb-2 ml-2">
+                    Delete Selected
+                </button>
+            </div>
 
 
             <div class="row mb-2">
@@ -262,6 +317,7 @@ const getCategory = () => {
                     <table class="table table-bordered">
                         <thead>
                             <tr>
+                                <th><input type="checkbox" v-model="selectAll" @change="selectAllProducts" /></th>
                                 <th style="width: 10px">#</th>
                                 <th>Product Name</th>
                                 <th>Category</th>
@@ -273,6 +329,7 @@ const getCategory = () => {
                         </thead>
                         <tbody v-if="products.data.length > 0">
                             <tr v-for="product in products.data" :key="product.id">
+                                <th><input type="checkbox" :checked="selectAll" @change="toggleSelection(product)" /></th>
                                 <td>{{ product.id }}</td>
                                 <td>{{ product.name }}</td>
                                 <td>{{ product.category.category_name }}</td>

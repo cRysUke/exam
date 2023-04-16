@@ -129,8 +129,8 @@ class ProductController extends Controller
     {
         $product = Product::find($id);
         if ($product) {
-            $update = $product->delete();
-            if ($update) {
+            $delete = $product->delete();
+            if ($delete) {
                 return response()->json([
                     'status' => 201,
                     'success' => true,
@@ -211,6 +211,35 @@ class ProductController extends Controller
             }
         } else {
             return $this->index();
+        }
+    }
+
+
+    //delete a product
+    public function bulkDelete()
+    {
+        $product = Product::whereIn('id', request('ids'));
+        if ($product) {
+            $delete = $product->delete();
+            if ($delete) {
+                return response()->json([
+                    'status' => 201,
+                    'success' => true,
+                    'message' => 'Product(s) deleted successfully.',
+                ], 201);
+            } else {
+                return response()->json([
+                    'status' => 500,
+                    'success' => false,
+                    'message' => 'Something went wrong',
+                ], 500);
+            }
+        } else {
+            return response()->json([
+                'status' => 204,
+                'success' => false,
+                'message' => 'No Record(s) found',
+            ], 204);
         }
     }
 }
